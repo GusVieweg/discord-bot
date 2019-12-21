@@ -1,0 +1,113 @@
+import discord
+import re
+import os
+import requests
+
+from stores.reaction import ReactionStore
+
+from dotenv import load_dotenv
+load_dotenv()
+
+IS_TEST = True
+
+class JokeyBot(discord.Client):
+    def __init__(self, *args, **kwargs):
+        super(JokeyBot, self).__init__(*args, **kwargs)
+        self.reaction_store = ReactionStore(self)
+
+    async def on_jokeybot_status_filter(self, message):
+        if (re.search(r"^JokeyBot, status!$", message.content, re.IGNORECASE)):
+            if (os.environ['MAINTENANCE_MODE']):
+                await message.channel.send(f"Sorry Edgars, but I'm down for maintenance right now.\n\nI'll come back even stronger and jokier before you know it though!")
+
+    async def on_actually_filter(self, message):
+        if (re.search('actually', message.content, re.IGNORECASE)):
+            emoji = '<:WellActually:656886620859006976>'
+            await message.add_reaction(emoji)
+    
+    async def on_together_filter(self, message):
+        content = message.content
+        if (re.search('together', content, re.IGNORECASE)):
+            pattern = re.sub('together', "_TOG-EDGAR_", content, flags=re.IGNORECASE)
+            await message.channel.send(f'Or should you say, "{pattern}"?')
+
+    async def on_dad_filter(self, message):
+        if (re.search(r"[\s]dad[\W]|^dad$|[\s]dad$", message.content, re.IGNORECASE)):
+            await message.channel.send(f"I'm not your _fucking_ dad.")
+
+    async def on_ready(self):
+        print('Logged on as {0}!'.format(self.user))
+
+    async def on_raw_reaction_add(self, payload):
+        if(payload.user_id != self.user.id):
+            self.reaction_store.increment_emoji(payload)
+        else:
+            print("JokeyBot shouldn't count his own reactions. Skipping.")
+    
+    async def on_raw_reaction_remove(self, payload):
+        if(payload.user_id != self.user.id):
+            self.reaction_store.decrement_emoji(payload)
+    
+    async def on_update_cloud_store_filter(self, message):
+        if (re.search('update_cloud_store', message.content, re.IGNORECASE)):
+            self.reaction_store.push_to_cloud_store()
+    
+    async def on_cloud_store_clear_filter(self, message):
+        if (re.search('clear_cloud_store', message.content, re.IGNORECASE)):
+            self.reaction_store.clear_cloud_store()
+    
+    async def on_scoreboard_filter(self, message):
+        if (re.search('/scoreboard', message.content, re.IGNORECASE)):
+            ok, json = self.reaction_store.get_cloud_store()
+            lols = json["Total"]["453333328347791401"]
+            darns = json["Total"]["453333295086960660"]
+            ratio = '{0:.2f}'.format(round(100 * (lols / darns), 2))
+            await message.channel.send(f"""```Lols:          {lols}\nDarns:         {darns}\nLtD Ratio: {ratio}%```""")
+
+    async def on_cloud_store_reset_filter(self, message):
+        if (re.search('reset_cloud_store', message.content, re.IGNORECASE)):
+            self.reaction_store.clear_cloud_store()
+            await self.reaction_store.get_all_reactions(message)
+    
+    async def on_get_emoji_list_filter(self, message):
+        if (re.search(r'get\s?(\w+)?\s?(\d+)?\s?reaction list \w+ \w+.?$', message.content, re.IGNORECASE)):
+            name = message.content.split()[-1]
+            try:
+                amount = int(re.search(r'\d+', message.content).group())
+            except:
+                amount = -1
+            response = self.reaction_store.get_reaction_list(name, amount=amount)
+            await message.channel.send(response)
+
+    async def on_message(self, message):
+        if (IS_TEST and message.channel.name != 'bot-test'):
+            print(f'Skipping {message.author.name}\'s message "{message.content}" from unwanted channel {message.channel.name}.')
+            return
+        if (message.author.id == self.user.id):
+            print("JokeyBot shouldn't react to himself. Skipping message.")
+            return
+
+        requested = True if message.content.lower().startswith(("jb", "jokeybot")) else False
+        channel_name = "bot-test" if IS_TEST else message.channel.name
+        content = message.content
+
+        await self.on_jokeybot_status_filter(message)
+        if (int(os.environ['MAINTENANCE_MODE'])):
+            return
+
+        await self.on_actually_filter(message)
+        await self.on_together_filter(message)
+        await self.on_dad_filter(message)
+        
+        if (requested):
+            await self.on_get_emoji_list_filter(message)
+            await self.on_scoreboard_filter(message)
+
+        if (IS_TEST and message.channel.name == 'bot-test'):
+            await self.on_update_cloud_store_filter(message)
+            await self.on_cloud_store_clear_filter(message)
+            await self.on_cloud_store_reset_filter(message)
+
+
+jb = JokeyBot()
+jb.run(os.environ["ACCESS_TOKEN"])
