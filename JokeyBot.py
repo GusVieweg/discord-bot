@@ -8,8 +8,6 @@ from stores.reaction import ReactionStore
 from dotenv import load_dotenv
 load_dotenv()
 
-IS_TEST = True
-
 class JokeyBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super(JokeyBot, self).__init__(*args, **kwargs)
@@ -80,16 +78,14 @@ class JokeyBot(discord.Client):
             await message.channel.send(response)
 
     async def on_message(self, message):
-        if (IS_TEST and message.channel.name != 'bot-test'):
-            print(f'Skipping {message.author.name}\'s message "{message.content}" from unwanted channel {message.channel.name}.')
-            return
+        # if (IS_TEST and message.channel.name != 'bot-test'):
+        #     print(f'Skipping {message.author.name}\'s message "{message.content}" from unwanted channel {message.channel.name}.')
+        #     return
         if (message.author.id == self.user.id):
             print("JokeyBot shouldn't react to himself. Skipping message.")
             return
 
         requested = True if message.content.lower().startswith(("jb", "jokeybot")) else False
-        channel_name = "bot-test" if IS_TEST else message.channel.name
-        content = message.content
 
         await self.on_jokeybot_status_filter(message)
         if (int(os.environ['MAINTENANCE_MODE'])):
@@ -103,7 +99,7 @@ class JokeyBot(discord.Client):
             await self.on_get_emoji_list_filter(message)
             await self.on_scoreboard_filter(message)
 
-        if (IS_TEST and message.channel.name == 'bot-test'):
+        if (message.channel.name == 'bot-test'):
             await self.on_update_cloud_store_filter(message)
             await self.on_cloud_store_clear_filter(message)
             await self.on_cloud_store_reset_filter(message)
