@@ -1,1 +1,1 @@
-web: python JokeyBot.py
+worker: python JokeyBot.py
