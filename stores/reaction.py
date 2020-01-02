@@ -94,7 +94,7 @@ class ReactionStore():
         resp = requests.get(url)
         return resp.ok, resp.json()
     
-    async def get_all_reactions(self, message):
+    async def get_all_reactions(self):
         function_storage = {
             "Total": {}
         }

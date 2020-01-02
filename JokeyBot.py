@@ -2,6 +2,7 @@ import discord
 import re
 import os
 import requests
+from datetime import datetime
 
 from stores.reaction import ReactionStore
 
@@ -12,6 +13,12 @@ class JokeyBot(discord.Client):
     def __init__(self, *args, **kwargs):
         super(JokeyBot, self).__init__(*args, **kwargs)
         self.reaction_store = ReactionStore(self)
+    
+    async def nightly_cloud_reset(self):
+        print("Running nightly cloud reset.")
+        self.reaction_store.clear_cloud_store()
+        await self.reaction_store.get_all_reactions()
+        print("Nightly cloud reset complete.")
 
     async def on_jokeybot_status_filter(self, message):
         if (re.search(r"^JokeyBot, status!$", message.content, re.IGNORECASE)):
@@ -55,12 +62,15 @@ class JokeyBot(discord.Client):
             self.reaction_store.clear_cloud_store()
     
     async def on_scoreboard_filter(self, message):
-        if (re.search('/scoreboard', message.content, re.IGNORECASE)):
+        if (re.search('scoreboard', message.content, re.IGNORECASE)):
             ok, json = self.reaction_store.get_cloud_store()
             lols = json["Total"]["453333328347791401"]
             darns = json["Total"]["453333295086960660"]
             ratio = '{0:.2f}'.format(round(100 * (lols / darns), 2))
-            await message.channel.send(f"""```Lols:          {lols}\nDarns:         {darns}\nLtD Ratio: {ratio}%```""")
+            lf = '{0:.2f}%'.format(round((lols / (lols + darns))*100, 2))
+            df = '{0:.2f}%'.format(round((darns / (lols + darns))*100, 2))
+            net = '{0:.2f}%'.format(round(lf - df, 2))
+            await message.channel.send(f"""```Lol Factor:          {lf}%\Darn Factor:         {df}\nLtD Ratio: {net}```""")
 
     async def on_cloud_store_reset_filter(self, message):
         if (re.search('reset_cloud_store', message.content, re.IGNORECASE)):
@@ -103,7 +113,4 @@ class JokeyBot(discord.Client):
             await self.on_update_cloud_store_filter(message)
             await self.on_cloud_store_clear_filter(message)
             await self.on_cloud_store_reset_filter(message)
-
-
-jb = JokeyBot()
-jb.run(os.environ["ACCESS_TOKEN"])
+            
