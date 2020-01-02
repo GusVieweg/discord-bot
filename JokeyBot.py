@@ -66,10 +66,10 @@ class JokeyBot(discord.Client):
             ok, json = self.reaction_store.get_cloud_store()
             lols = json["Total"]["453333328347791401"]
             darns = json["Total"]["453333295086960660"]
-            lf = '{0:.2f}%'.format(str(round((lols / (lols + darns))*100, 2)))
-            df = '{0:.2f}%'.format(str(round((darns / (lols + darns))*100, 2)))
-            net = '{0:.2f}%'.format(str(round(lf - df, 2)))
-            await message.channel.send(f"""```Lol Factor:          {lf}%\Darn Factor:         {df}\nLtD Ratio: {net}```""")
+            lf = round((lols / (lols + darns))*100, 2)
+            df = round((darns / (lols + darns))*100, 2)
+            net = round(lf - df, 2)
+            await message.channel.send(f"""```Lol Factor: {lf}%\Darn Factor: {df}%\nLtD Ratio: {net}%```""")
 
     async def on_cloud_store_reset_filter(self, message):
         if (re.search('reset_cloud_store', message.content, re.IGNORECASE)):
