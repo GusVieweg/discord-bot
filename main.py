@@ -1,4 +1,4 @@
-import JokeyBot
+from JokeyBot import JokeyBot
 from apscheduler.schedulers.blocking import BlockingScheduler
 from dotenv import load_dotenv
 load_dotenv()
