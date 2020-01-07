@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 
 from stores.reaction import ReactionStore
+from utils.validators import EmojiValidator
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -85,6 +86,18 @@ class JokeyBot(discord.Client):
                 amount = -1
             response = self.reaction_store.get_reaction_list(name, amount=amount)
             await message.channel.send(response)
+    
+    async def on_get_emoji_stats_filter(self, message):
+        if (re.search(r'get emoji stats for', message.content, re.IGNORECASE)):
+            ev = EmojiValidator()
+            emoji = message.content.split()[-1]
+            if (re.search(r'<:(\w+):(\d+)>', emoji, re.IGNORECASE)):
+                emoji_id = int(re.search(r'\d+', message.content).group())
+            if (ev.char_is_emoji(emoji)):
+                emoji_id = emoji
+            response = self.reaction_store.get_emoji_stats(emoji_id)
+            await message.channel.send(response)
+        
 
     async def on_message(self, message):
         # if (IS_TEST and message.channel.name != 'bot-test'):
@@ -107,6 +120,7 @@ class JokeyBot(discord.Client):
         if (requested):
             await self.on_get_emoji_list_filter(message)
             await self.on_scoreboard_filter(message)
+            await self.on_get_emoji_stats_filter(message)
 
         if (message.channel.name == 'bot-test'):
             await self.on_update_cloud_store_filter(message)

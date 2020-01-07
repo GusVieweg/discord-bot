@@ -3,6 +3,7 @@ import re
 import os
 import requests
 import asyncio
+from collections import defaultdict
 
 from utils.validators import EmojiValidator
 
@@ -155,3 +156,21 @@ class ReactionStore():
                     except:
                         message += f"{idx+1}: {emoji_name} ({emoji_count})\n"
             return message
+
+    def get_emoji_stats(self, emoji_id):
+        ok, cloud_store = self.get_cloud_store()
+        flipped = defaultdict(dict)
+        for key, val in cloud_store.items():
+            for subkey, subval in val.items():
+                flipped[subkey][key] = subval
+        
+        data = flipped[str(emoji_id)]
+        print(data)
+        data = {k: v for k, v in sorted(data.items(), key=lambda item: item[1], reverse=True)}
+        message = f'Emoji Stats for {self.jb.get_emoji(emoji_id) or emoji_id}:\n'
+        
+        for idx, user in enumerate(data):
+            user_stat = data[user]
+            message += f'{idx+1}: {user} ({user_stat})\n'
+
+        return message

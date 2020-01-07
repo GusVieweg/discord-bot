@@ -6,12 +6,13 @@ load_dotenv()
 
 jb = JokeyBot()
 
-sched = AsyncIOScheduler()
+if os.environ['IS_PRODUCTION'] == 1:
+    sched = AsyncIOScheduler()
 
-@sched.scheduled_job('interval', days=1, start_date='2020-01-07 23:59:00', timezone="US/Eastern")
-async def scheduled_job():
-    await jb.nightly_cloud_reset()
+    @sched.scheduled_job('interval', days=1, start_date='2020-01-07 23:59:00', timezone="US/Eastern")
+    async def scheduled_job():
+        await jb.nightly_cloud_reset()
 
-sched.start()
+    sched.start()
 
 jb.run(os.environ["ACCESS_TOKEN"])
