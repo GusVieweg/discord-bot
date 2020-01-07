@@ -108,7 +108,6 @@ class ReactionStore():
                         users = await reaction.users().flatten()
                         for user in users:
                             if (user.name == 'JokeyBot'):
-                                print("Skipping JokeyBot")
                                 break
                             name = user.name
                             emoji_id = reaction.emoji.id if reaction.custom_emoji else reaction.emoji
