@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 jb = JokeyBot()
-jb.run(os.environ["ACCESS_TOKEN"])
 
 sched = BlockingScheduler()
 
@@ -15,3 +14,5 @@ async def scheduled_job():
     await jb.nightly_cloud_reset()
 
 sched.start()
+
+jb.run(os.environ["ACCESS_TOKEN"])
