@@ -14,49 +14,18 @@ load_dotenv()
 class ReactionStore():
     def __init__(self, jb):
         self.jb = jb
-        self.local_storage = {}
+        self.cloud_store_url = os.environ['CLOUD_STORE_URL']
     
-    def increment_emoji(self, payload):
-        reaction = payload.emoji.name if payload.emoji.id is None else payload.emoji.id
-        user = self.jb.get_user(payload.user_id).name
-        
-        try:
-            u = self.local_storage[user]
-            try:
-                r = u[reaction]
-                u[reaction] = r + 1
-            except:
-                self.local_storage[user][reaction] = 1
-        except:
-            self.local_storage[user] = {
-                reaction: 1
-            }
-            print(f"Created self.local_storage object for {user}.")
-        print(self.local_storage)
-    
-    def decrement_emoji(self, payload):
-        reaction = payload.emoji.name if payload.emoji.id is None else payload.emoji.id
-        user = self.jb.get_user(payload.user_id).name
-        
-        # Since these are temporary values, they will be summed
-        # with total values in the myJson file. It's okay to have
-        # negative values since they are measuring differentials.
-        try:
-            u = self.local_storage[user]
-            try:
-                r = u[reaction]
-                u[reaction] = r - 1
-            except:
-                self.local_storage[user][reaction] = -1
-        except:
-            self.local_storage[user] = {
-                reaction: -1
-            }
-            print(f"Created self.local_storage object for {user}.")
-        print(self.local_storage)
-    
-    def push_to_cloud_store(self, storage_system=None):
-        storage_system = storage_system if storage_system is not None else self.local_storage
+    def get_cloud_store(self):
+        resp = requests.get(self.cloud_store_url)
+        return resp.ok, resp.json()
+
+    def clear_cloud_store(self):
+        resp = requests.put(self.cloud_store_url, json={})
+        if resp.ok:
+            print("Cloud store cleared")
+
+    def push_to_cloud_store(self, storage_system):
         ok, cloud_store = self.get_cloud_store()
         if (ok):
             print("Pulled cloud store.")
@@ -74,7 +43,7 @@ class ReactionStore():
                     except Exception as e:
                         cloud_store[f"{user}"][f"{reaction}"] = storage_system[user][reaction]
             print(f"Updating {emoji_count} records...")
-            r = requests.put(os.environ['CLOUD_STORE_URL'], json=cloud_store)
+            r = requests.put(self.cloud_store_url, json=cloud_store)
             if r.ok:
                 print("Updated cloud store.")
             if storage_system is not None:
@@ -83,17 +52,6 @@ class ReactionStore():
                 self.local_storage = {}
         else:
             print("Failed to pull cloud store, will try again.")
-    
-    def clear_cloud_store(self):
-        url = os.environ['CLOUD_STORE_URL']
-        resp = requests.put(url, json={})
-        if resp.ok:
-            print("Cloud store cleared")
-    
-    def get_cloud_store(self):
-        url = os.environ['CLOUD_STORE_URL']
-        resp = requests.get(url)
-        return resp.ok, resp.json()
     
     async def get_all_reactions(self):
         function_storage = {
