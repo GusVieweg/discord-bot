@@ -43,16 +43,6 @@ class JokeyBot(discord.Client):
 
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
-
-    async def on_raw_reaction_add(self, payload):
-        if(payload.user_id != self.user.id):
-            self.reaction_store.increment_emoji(payload)
-        else:
-            print("JokeyBot shouldn't count his own reactions. Skipping.")
-    
-    async def on_raw_reaction_remove(self, payload):
-        if(payload.user_id != self.user.id):
-            self.reaction_store.decrement_emoji(payload)
     
     async def on_update_cloud_store_filter(self, message):
         if (re.search('update_cloud_store', message.content, re.IGNORECASE)):

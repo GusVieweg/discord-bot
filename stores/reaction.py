@@ -123,7 +123,6 @@ class ReactionStore():
                 flipped[subkey][key] = subval
         
         data = flipped[str(emoji_id)]
-        print(data)
         data = {k: v for k, v in sorted(data.items(), key=lambda item: item[1], reverse=True)}
         message = f'Emoji Stats for {self.jb.get_emoji(emoji_id) or emoji_id}:\n'
         
