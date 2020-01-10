@@ -18,10 +18,12 @@ class ReactionStore():
     
     def get_cloud_store(self):
         resp = requests.get(self.cloud_store_url)
-        return resp.ok, resp.json()
+        return_json = resp.json()
+        del return_json['meta']
+        return resp.ok, return_json
 
     def clear_cloud_store(self):
-        resp = requests.put(self.cloud_store_url, json={})
+        resp = requests.put(self.cloud_store_url, json=add_metadata({}))
         if resp.ok:
             print("Cloud store cleared")
 
@@ -43,7 +45,7 @@ class ReactionStore():
                     except Exception as e:
                         cloud_store[f"{user}"][f"{reaction}"] = storage_system[user][reaction]
             print(f"Updating {emoji_count} records...")
-            r = requests.put(self.cloud_store_url, json=cloud_store)
+            r = requests.put(self.cloud_store_url, json=add_metadata(cloud_store))
             if r.ok:
                 print("Updated cloud store.")
             if storage_system is not None:
@@ -52,6 +54,12 @@ class ReactionStore():
                 self.local_storage = {}
         else:
             print("Failed to pull cloud store, will try again.")
+    
+    def add_metadata(data):
+        data['meta'] = {}
+        from datetime import datetime
+        data['meta']['updated_on'] = str(datetime.now())
+        return data
     
     async def get_all_reactions(self):
         function_storage = {
