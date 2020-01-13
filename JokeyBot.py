@@ -6,6 +6,7 @@ from datetime import datetime
 
 from stores.reaction import ReactionStore
 from utils.validators import EmojiValidator
+from utils.EdgarFacts import EdgarFacts
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -20,6 +21,31 @@ class JokeyBot(discord.Client):
         self.reaction_store.clear_cloud_store()
         await self.reaction_store.get_all_reactions()
         print("Nightly cloud reset complete.")
+    
+    async def on_help_filter(self, message):
+        if (re.search(r'help', message.content, re.IGNORECASE)):
+            await message.channel.send("""
+                Hello! I'm JokeyBot. Feel free to refer to me as 'JokeyBot' or 'JB'.
+
+Here are some commands I respond to:
+- "get top `<amount (limit 50)>` reaction list for `<user>`"
+- "get emoji stats for `<emoji>`"
+- "scoreboard"
+- "edgar fact"
+- "help"
+
+Some example commands:
+- "jb hit me with an edgar fact"
+- "Jokeybot scoreboard"
+- "jb get top 50 reaction list for PatPov"
+
+Thanks, Edgars!
+            """)
+    
+    async def on_edgar_fact_filter(self, message):
+        if (re.search(r'edgar fact', message.content, re.IGNORECASE)):
+            ef = EdgarFacts()
+            await message.channel.send(ef.get_edgar_fact())
 
     async def on_jokeybot_status_filter(self, message):
         if (re.search(r"^JokeyBot, status!$", message.content, re.IGNORECASE)):
@@ -111,6 +137,8 @@ class JokeyBot(discord.Client):
             await self.on_get_emoji_list_filter(message)
             await self.on_scoreboard_filter(message)
             await self.on_get_emoji_stats_filter(message)
+            await self.on_edgar_fact_filter(message)
+            await self.on_help_filter(message)
 
         if (message.channel.name == 'bot-test'):
             await self.on_update_cloud_store_filter(message)
