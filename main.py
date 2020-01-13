@@ -4,15 +4,25 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-jb = JokeyBot()
+def is_prod():
+    if int(os.environ['IS_PRODUCTION']) == 1:
+        return True
+    return False
 
-if os.environ['IS_PRODUCTION'] == 1:
-    sched = AsyncIOScheduler()
+def main():
+    jb = JokeyBot()
 
-    @sched.scheduled_job('interval', days=1, start_date='2020-01-07 23:59:00', timezone="US/Eastern")
-    async def scheduled_job():
-        await jb.nightly_cloud_reset()
+    if is_prod():
+        sched = AsyncIOScheduler()
+        print("Is production. Scheduling job.")
 
-    sched.start()
+        @sched.scheduled_job('interval', days=1, start_date='2020-01-07 23:59:00', timezone="US/Eastern")
+        async def scheduled_job():
+            await jb.nightly_cloud_reset()
 
-jb.run(os.environ["ACCESS_TOKEN"])
+        sched.start()
+
+    jb.run(os.environ["ACCESS_TOKEN"])
+
+if __name__ == "__main__":
+    main()
