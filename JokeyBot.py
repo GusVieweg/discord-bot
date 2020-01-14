@@ -34,6 +34,7 @@ Here are some commands I respond to:
 - "scoreboard"
 - "edgar fact"
 - "help"
+- "hug"
 
 Some example commands:
 - "jb hit me with an edgar fact"
