@@ -2,6 +2,7 @@ import discord
 import re
 import os
 import requests
+import time
 from datetime import datetime
 
 from stores.reaction import ReactionStore
@@ -87,6 +88,14 @@ Thanks, Edgars!
             df = round((darns / (lols + darns))*100, 2)
             net = round(lf - df, 2)
             await message.channel.send(f"""```Lol Factor:   {lf}%\nDarn Factor:  {df}%\nNet Jokiness: {net}%```""")
+    
+    async def on_hug_filter(self, message):
+        if (re.search(r"\shug($|\s)", message.content, re.IGNORECASE)):
+            await message.channel.send(f"Hey there, {message.author.display_name}. **(hugs)**")
+            time.sleep(2)
+            await message.channel.send(f"It's okay, {message.author.display_name}, it's okay.")
+            time.sleep(4)
+            await message.channel.send(f"Daddy's got you.")
 
     async def on_cloud_store_reset_filter(self, message):
         if (re.search('reset_cloud_store', message.content, re.IGNORECASE)):
@@ -139,6 +148,7 @@ Thanks, Edgars!
             await self.on_get_emoji_stats_filter(message)
             await self.on_edgar_fact_filter(message)
             await self.on_help_filter(message)
+            await self.on_hug_filter(message)
 
         if (message.channel.name == 'bot-test'):
             await self.on_update_cloud_store_filter(message)

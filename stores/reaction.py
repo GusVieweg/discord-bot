@@ -23,7 +23,7 @@ class ReactionStore():
         return resp.ok, return_json
 
     def clear_cloud_store(self):
-        resp = requests.put(self.cloud_store_url, json=add_metadata({}))
+        resp = requests.put(self.cloud_store_url, json=self.add_metadata({}))
         if resp.ok:
             print("Cloud store cleared")
 
@@ -45,7 +45,7 @@ class ReactionStore():
                     except Exception as e:
                         cloud_store[f"{user}"][f"{reaction}"] = storage_system[user][reaction]
             print(f"Updating {emoji_count} records...")
-            r = requests.put(self.cloud_store_url, json=add_metadata(cloud_store))
+            r = requests.put(self.cloud_store_url, json=self.add_metadata(cloud_store))
             if r.ok:
                 print("Updated cloud store.")
             if storage_system is not None:
