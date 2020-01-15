@@ -55,7 +55,7 @@ class ReactionStore():
         else:
             print("Failed to pull cloud store, will try again.")
     
-    def add_metadata(data):
+    def add_metadata(self, data):
         data['meta'] = {}
         from datetime import datetime
         data['meta']['updated_on'] = str(datetime.now())
