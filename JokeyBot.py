@@ -2,7 +2,7 @@ import discord
 import re
 import os
 import requests
-import time
+import asyncio
 from datetime import datetime
 
 from stores.reaction import ReactionStore
@@ -93,9 +93,9 @@ Thanks, Edgars!
     async def on_hug_filter(self, message):
         if (re.search(r"\shug($|\s)", message.content, re.IGNORECASE)):
             await message.channel.send(f"Hey there, {message.author.display_name}. **(hugs)**")
-            time.sleep(2)
+            await asyncio.sleep(2)
             await message.channel.send(f"It's okay, {message.author.display_name}, it's okay.")
-            time.sleep(4)
+            await asyncio.sleep(4)
             await message.channel.send(f"Daddy's got you.")
 
     async def on_cloud_store_reset_filter(self, message):
