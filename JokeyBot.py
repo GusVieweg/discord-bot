@@ -88,7 +88,7 @@ Thanks, Edgars!
             lf = round((lols / (lols + darns))*100, 2)
             df = round((darns / (lols + darns))*100, 2)
             net = round(lf - df, 2)
-            await message.channel.send(f"""```Lol Factor:   {lf}%\nDarn Factor:  {df}%\nNet Jokiness: {net}%```""")
+            await message.channel.send(f"""```Lol Factor:   {"{0:.2f}".format(lf)}%\nDarn Factor:  {"{0:.2f}".format(df)}%\nNet Jokiness: {"{0:.2f}".format(net)}%```""")
     
     async def on_hug_filter(self, message):
         if (re.search(r"\shug($|\s)", message.content, re.IGNORECASE)):
